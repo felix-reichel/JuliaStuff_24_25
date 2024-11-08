@@ -121,3 +121,38 @@ println(" Number of part-time consultants starting in shift 2: ", value(xP2))
 println(" Number of part-time consultants starting in shift 3: ", value(xP3))
 println(" Number of part-time consultants starting in shift 4: ", value(xP4))
 println(" Total cost per day: ", objective_value(model), " \$")
+
+
+# hw2
+using JuMP
+using HiGHS
+model = Model(HiGHS.Optimizer)
+set_silent(model)
+@variable(model, x1) 
+@variable(model, x2) 
+@objective(model, Min, 10*x1 + 20*x2) 
+@constraint(model, 5*x1 >= -6) 
+@constraint(model, 7*x2 >= -8) 
+@constraint(model, 10*x1 + 14*x2 >= -28) 
+optimize!(model)
+println("===")
+println(" Opt. x1: ", value(x1))
+println(" Opt. x2: ", value(x2))
+println(" min OF: ", objective_value(model))
+
+
+
+model2 = Model(HiGHS.Optimizer)
+set_silent(model2)
+@variable(model2, x1 >= 0) 
+@variable(model2, x2 >= 0)
+@variable(model2, x3 >= 0)
+@objective(model2, Max, -6*x1 -8*x2 - 28*x3)
+@constraint(model2, 5*x1 + 10*x3 == 10)
+@constraint(model2, 7*x2 + 14*x3 == 20)
+optimize!(model2)
+println("===")
+println(" Opt. x1: ", value(x1))
+println(" Opt. x2: ", value(x2))
+println(" Opt. x3: ", value(x3))
+println(" OF Value: ", objective_value(model2))
