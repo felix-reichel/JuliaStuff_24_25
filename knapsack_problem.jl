@@ -94,3 +94,66 @@ run_investment_knapsack()
 # The maximum profit for the investment problem is: 62.
 
 
+
+## taken originally from JuMP dev docs stable pp.143-147
+
+using JuMP
+#using HiGHS
+
+import Pkg
+Pkg.add("Juniper")
+Pkg.add("Ipopt")
+using Juniper, Ipopt
+
+function solve_knapsack_problem(;
+    profit::Vector{Int64},
+    weight::Vector{Int64},
+    capacity::Int64,
+    )
+    n = length(weight)
+    # The profit and weight vectors must be of equal length.
+    @assert length(profit) == n
+
+
+    ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0)
+    optimizer = optimizer_with_attributes(Juniper.Optimizer, "nl_solver"=>ipopt)
+    model = Model(optimizer)
+    #model = Model(Juniper.Optimizer) # HiGHS.Optimizer
+    # set_silent(model)
+
+    @variable(model, x[1:n], Bin)
+    @objective(model, Max, profit' * x)
+    @constraint(model, weight' * x <= capacity)
+
+    optimize!(model)
+
+    @assert is_solved_and_feasible(model)
+
+    println("Objective is: ", objective_value(model))
+    println("Solution is:")
+    for i in 1:n
+        print("x[$i] = ", round(Int, value(x[i])))
+        println(", c[$i] / w[$i] = ", profit[i] / weight[i])
+    end
+        chosen_items = [i for i in 1:n if value(x[i]) > 0.5]
+    return chosen_items
+end
+
+
+p_i = [4, 1, 3]           # Prices of assets A
+e_i = [8, 4, 6]           # Expected returns from assets A
+b = 4                    # Total available budget (Constant)
+
+
+solve_knapsack_problem(; profit = e_i, weight = p_i, capacity = b )
+# OF value = 10.
+
+
+
+p_i = [4, 4, 10, 8, 1, 10, 3, 1, 6, 6]      
+e_i = [5, 9, 8, 7, 13, 5, 14, 9, 1, 9]     
+b = 26  
+
+
+solve_knapsack_problem(; profit = e_i, weight = p_i, capacity = b )
+# OF value = 62.
