@@ -42,6 +42,8 @@ function solve_tsp(n::Int64)
 
     optimize!(model)
 
+    print(model[:x])
+
     if termination_status(model) == MOI.OPTIMAL
         println("Optimal route found:")
 
